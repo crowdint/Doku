@@ -10,9 +10,24 @@ class Application
   def start
     application :name => "Docbrown" do |app|
       app.delegate = self
-      window :frame => [100, 100, 500, 500], :title => "Docbrown" do |win|
-        win << label(:text => "orale pinche robertito", :layout => {:start => false})
+      window :size => [640, 480], :center => true, :view => :nolayout do |win|
         win.will_close { exit }
+
+        win.view = layout_view(:layout => {:expand => [:width, :height],
+            :padding => 0, :margin => 0}) do |vert|
+
+          vert << layout_view(:frame => [0, 0, 0, 40], :mode => :horizontal,
+                             :layout => {:padding => 0, :margin => 0,
+                             :start => false, :expand => [:width]}) do |horiz|
+              horiz << label(:text => "Feed", :layout => {:align => :center})
+
+              horiz << @@feed_field = text_field(:layout => {:expand => :width})
+
+              horiz << button(:title => "Go", :layout => {:align => :center}) do |b|
+                # Code to button click
+              end
+          end
+        end
       end
     end
   end
