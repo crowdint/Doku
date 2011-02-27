@@ -11,6 +11,7 @@ class Application
   def start
     application :name => "Docbrown" do |app|
       app.delegate = self
+
       window :size => [340, 180], :center => true, :view => :nolayout do |win|
         win.will_close { exit }
 
@@ -23,7 +24,7 @@ class Application
 
             horiz << label(:text => "User:", :layout => {:align => :center})
 
-            horiz << @@feed_field = text_field(:layout => {:expand => :width})
+            horiz << @@user_field = text_field(:layout => {:expand => :width})
           end
 
           vert << layout_view(:frame => [0, 0, 0, 40], :mode => :horizontal,
@@ -31,22 +32,51 @@ class Application
                              :start => false, :expand => [:width]}) do |horiz|
 
             horiz << label(:text => "Password:", :layout => {:align => :center})
-            horiz << @password = text_field(:layout => {:expand => :width})
+            horiz << @@password = text_field(:layout => {:expand => :width})
 
 
           end
 
-          vert << layout_view(:frame => [0, 0, 0, 40], :mode => :horizontal,
+          vert << @l1 = layout_view(:frame => [0, 0, 0, 40], :mode => :horizontal,
                              :layout => {:padding => 0, :margin => 0,
                              :start => false, :expand => [:width]}) do |horiz|
 
             horiz << button(:title => "Go", :layout => {:align => :center}) do |b|
+              b.on_action { show_docs }
                 # Code to button click
             end
           end
         end
       end
     end
+  end
+
+  def show_docs
+    window :size => [640,480], :center => true do |win|
+      win.view = layout_view(:layout => {:expand => [:width, :height],
+          :padding => 0, :margin => 0}) do |vert|
+
+        vert << scroll_view(:layout => {:expand => [:width, :height]}) do |scroll|
+          scroll.setAutohidesScrollers(true)
+          scroll << @table = table_view(:columns => [column(:id => :data, :title => '')],
+                                        :data => []) do |table|
+             table.setUsesAlternatingRowBackgroundColors(true)
+             table.setGridStyleMask(NSTableViewSolidHorizontalGridLineMask)                             
+          end
+        end
+      end
+      #win.setHidden(true)
+    end
+
+    service = GDocs4Ruby::Service.new
+    service.authenticate(@@user_field.stringValue, @@password.stringValue)
+    documents = service.files
+    
+    documents.each do |doc|
+      @table.dataSource.data << { :data => doc.title }
+    end
+
+    @table.reloadData
   end
   
   # file/open
