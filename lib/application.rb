@@ -32,7 +32,7 @@ class Application
                              :start => false, :expand => [:width]}) do |horiz|
 
             horiz << label(:text => "Password:", :layout => {:align => :center})
-            horiz << @@password = text_field(:layout => {:expand => :width})
+            horiz << @@password = secure_text_field(:frame => [0, 0, 0, 20], :layout => {:expand => :width})
 
 
           end
@@ -71,9 +71,10 @@ class Application
     service = GDocs4Ruby::Service.new
     service.authenticate(@@user_field.stringValue, @@password.stringValue)
     documents = service.files
-    
-    documents.each do |doc|
-      @table.dataSource.data << { :data => doc.title }
+    titles = documents.collect(&:title)
+
+    titles.each do |doc|
+      @table.dataSource.data << { :data => doc }
     end
 
     @table.reloadData
