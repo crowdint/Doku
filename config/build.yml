@@ -1,6 +1,6 @@
-name: Docbrown
+name: Doku
 load: lib/application.rb
-version: "1.0"
+version: "0.1"
 icon: resources/HotCocoa.icns
 resources:
   - resources/**/*.*
