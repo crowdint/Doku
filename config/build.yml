@@ -1,7 +1,7 @@
 name: Doku
 load: lib/application.rb
 version: "0.1"
-icon: resources/HotCocoa.icns
+icon: resources/doku.icns
 resources:
   - resources/**/*.*
 sources: 
