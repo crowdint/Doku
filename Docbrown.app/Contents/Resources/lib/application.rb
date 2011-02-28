@@ -53,13 +53,18 @@ class Application
 
   def show_docs
     window :size => [640,480], :center => true do |win|
+      win.will_close { exit }
       win.view = layout_view(:layout => {:expand => [:width, :height],
           :padding => 0, :margin => 0}) do |vert|
 
         vert << scroll_view(:layout => {:expand => [:width, :height]}) do |scroll|
 
-          title_column = column(:id => :document_title)
+          title_column = column(:id => :document_title, :title => 'Document')
+          title_column.setEditable(false)
+
           url_column = column(:id => :document_url)
+          url_column.setEditable(false)
+          url_column.setHidden(true)
 
           scroll.setAutohidesScrollers(true)
           scroll << @table = table_view(:columns => [title_column, url_column],
@@ -80,8 +85,7 @@ class Application
     documents = service.files
     puts documents.last
     titles = documents.collect { |d| [d.title, d.html_uri]}
-
-    #titles = [ ["VALUE", "http://www.crowdint.com"] ]
+    titles = titles.sort { |a,b| a[0] <=> b[0] }
 
     titles.each do |doc|
       @table.dataSource.data << { :document_title => doc[0], :document_url => doc[1] }
