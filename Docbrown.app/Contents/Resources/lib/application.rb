@@ -32,17 +32,17 @@ class Application
                              :start => false, :expand => [:width]}) do |horiz|
 
             horiz << label(:text => "Password:", :layout => {:align => :center})
-            horiz << @@password = secure_text_field(:frame => [0, 0, 0, 40], :layout => {:expand => :width})
+            horiz << @@password = secure_text_field(:frame => [0, 0, 0, 20], :layout => {:expand => :width})
 
 
           end
 
-          vert << @l1 = layout_view(:frame => DefaultEmptyRect, :mode => :horizontal,
+          vert << @l1 = layout_view(:frame => [0, 0, 0, 40], :mode => :horizontal,
                              :layout => {:padding => 0, :margin => 0,
                              :start => false, :expand => [:width]}) do |horiz|
 
             horiz << button(:title => "Go", :layout => {:align => :center}) do |b|
-              b.on_action { show_docs }
+              b.on_action { show_docs; }
                 # Code to button click
             end
           end
@@ -57,11 +57,18 @@ class Application
           :padding => 0, :margin => 0}) do |vert|
 
         vert << scroll_view(:layout => {:expand => [:width, :height]}) do |scroll|
+
+          title_column = column(:id => :document_title)
+          url_column = column(:id => :document_url)
+
           scroll.setAutohidesScrollers(true)
-          scroll << @table = table_view(:columns => [column(:id => :data, :title => '')],
+          scroll << @table = table_view(:columns => [title_column, url_column],
                                         :data => []) do |table|
              table.setUsesAlternatingRowBackgroundColors(true)
-             table.setGridStyleMask(NSTableViewSolidHorizontalGridLineMask)                             
+             table.setGridStyleMask(NSTableViewSolidHorizontalGridLineMask)
+             table.setAllowsColumnSelection(false)
+             table.setDelegate(self)
+             table.setDoubleAction(:table_clicked)
           end
         end
       end
@@ -71,13 +78,23 @@ class Application
     service = GDocs4Ruby::Service.new
     service.authenticate(@@user_field.stringValue, @@password.stringValue)
     documents = service.files
-    titles = documents.collect(&:title)
+    puts documents.last
+    titles = documents.collect { |d| [d.title, d.html_uri]}
+
+    #titles = [ ["VALUE", "http://www.crowdint.com"] ]
 
     titles.each do |doc|
-      @table.dataSource.data << { :data => doc }
+      @table.dataSource.data << { :document_title => doc[0], :document_url => doc[1] }
     end
 
     @table.reloadData
+  end
+
+  def table_clicked(*args)
+    puts @table.dataSource.data[@table.clickedRow]
+    url_value = @table.dataSource.data[@table.clickedRow][:document_url]
+    url = NSURL.URLWithString(url_value)
+    NSWorkspace.sharedWorkspace.openURL(url)
   end
   
   # file/open
